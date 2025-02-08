@@ -4,94 +4,217 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wh4le - Ultimate Hacker Social</title>
-
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js"></script>
   
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #121212; color: #fff; }
-    .container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-    #chatBox { width: 90%; max-width: 800px; padding: 10px; background-color: #333; border-radius: 8px; margin-bottom: 10px; overflow-y: scroll; height: 300px; }
-    .message { margin: 5px; padding: 8px; background-color: #444; border-radius: 6px; }
-    .message .meta { font-size: 12px; color: #aaa; }
-    .message .actions { display: flex; gap: 10px; font-size: 14px; color: #6200ea; }
-    .login-btn, #darkModeBtn { padding: 10px 20px; background-color: #6200ea; border: none; border-radius: 4px; color: white; cursor: pointer; margin: 10px; }
-    .login-btn:hover, #darkModeBtn:hover { background-color: #3700b3; }
-    .dark-mode { background-color: #121212 !important; color: #fff !important; }
-    .light-mode { background-color: #fff !important; color: #000 !important; }
-    #messageInput { width: calc(100% - 20px); padding: 10px; border-radius: 4px; margin-top: 10px; }
-    .emoji-btn { font-size: 18px; cursor: pointer; }
-    .admin-btn { background-color: red; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1e1e1e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      background-color: #222;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #6200ea;
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      border: 1px solid #6200ea;
+      background-color: #333;
+      color: #fff;
+    }
+    button {
+      width: 80%;
+      padding: 12px;
+      background-color: #6200ea;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    button:hover {
+      background-color: #3700b3;
+    }
+    #chatSection {
+      display: none;
+      width: 100%;
+      max-width: 800px;
+      background-color: #333;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    #chatBox {
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+    .message {
+      padding: 10px;
+      background-color: #444;
+      border-radius: 6px;
+      margin: 8px 0;
+    }
+    .meta {
+      font-size: 12px;
+      color: #aaa;
+    }
+    #messageInput {
+      width: calc(100% - 20px);
+      padding: 10px;
+      margin-top: 15px;
+      background-color: #222;
+      color: #fff;
+      border-radius: 4px;
+    }
+    #darkModeBtn {
+      margin-top: 20px;
+      padding: 8px 16px;
+      background-color: #6200ea;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #darkModeBtn:hover {
+      background-color: #3700b3;
+    }
+    #userProfile {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #333;
+      border-radius: 5px;
+    }
+    #userProfile img {
+      width: 50px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    #serverList {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #444;
+      border-radius: 5px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    #serverList div {
+      cursor: pointer;
+      padding: 8px;
+      margin: 5px 0;
+      background-color: #555;
+      border-radius: 4px;
+    }
+    #serverList div:hover {
+      background-color: #6200ea;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome to Wh4le - Ultimate Hacker Social</h1>
-    <div id="loginSection">
-      <button class="login-btn" id="googleLoginBtn">Login with Google</button>
-      <br />
-      <p>or</p>
-      <input type="email" id="emailInput" placeholder="Email" />
-      <input type="password" id="passwordInput" placeholder="Password" />
-      <button class="login-btn" id="emailLoginBtn">Login with Email</button>
-      <button class="login-btn" id="signUpBtn">Sign Up</button>
-    </div>
+  <div class="container" id="loginSection">
+    <h1>Wh4le - Ultimate Hacker Social</h1>
+    <input type="email" id="emailInput" placeholder="Email" />
+    <input type="password" id="passwordInput" placeholder="Password" />
+    <button id="loginBtn">Login</button>
+    <p>Don't have an account? <span id="signUpLink" style="cursor: pointer; color: #6200ea;">Sign Up</span></p>
+  </div>
 
-    <div id="chatSection" style="display: none;">
-      <button class="login-btn" id="logoutBtn">Logout</button>
-      <div id="chatBox"></div>
-      <input type="text" id="messageInput" placeholder="Type a message..." />
-      <button id="darkModeBtn">Toggle Dark Mode</button>
-      <button class="admin-btn" id="adminBtn">Admin Actions</button>
+  <div class="container" id="signUpSection" style="display: none;">
+    <h1>Create Account</h1>
+    <input type="email" id="signupEmailInput" placeholder="Email" />
+    <input type="password" id="signupPasswordInput" placeholder="Password" />
+    <button id="signUpBtn">Sign Up</button>
+    <p>Already have an account? <span id="loginLink" style="cursor: pointer; color: #6200ea;">Login</span></p>
+  </div>
+
+  <div id="chatSection">
+    <button id="logoutBtn" style="margin-bottom: 20px;">Logout</button>
+    <div id="userProfile">
+      <img src="" id="profilePic" alt="User Profile" />
+      <p id="username"></p>
+      <p id="status">Status: <span id="onlineStatus">Offline</span></p>
     </div>
+    <div id="serverList"></div>
+    <div id="chatBox"></div>
+    <input type="text" id="messageInput" placeholder="Type a message..." />
+    <button id="sendMessageBtn">Send Message</button>
+    <button id="darkModeBtn">Toggle Dark Mode</button>
   </div>
 
   <script>
-    // Firebase Initialization
+    // Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyA4D...", // Use your Firebase API key here
+      apiKey: "YOUR_FIREBASE_API_KEY",  // Add your Firebase API Key here
       authDomain: "wh4le-d7e9d.firebaseapp.com",
-      databaseURL: "https://wh4le-d7e9d-default-rtdb.firebaseio.com/",
+      databaseURL: "https://wh4le-d7e9d.firebaseio.com/",
       projectId: "wh4le-d7e9d",
       storageBucket: "wh4le-d7e9d.appspot.com",
       messagingSenderId: "465981402247",
       appId: "1:465981402247:web:b55fd08796faa8aba95c22",
       measurementId: "G-4Y49CC6ERN"
     };
+
     const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-    const provider = new firebase.auth.GoogleAuthProvider();
 
     let currentUser = null;
-    let currentServer = "general"; // Placeholder for server context
+    let currentServer = 'general';  // Default server
 
-    // Feature 1: Authentication
+    // Toggle sections for login and signup
     const toggleSections = (isLoggedIn) => {
       if (isLoggedIn) {
         document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('signUpSection').style.display = 'none';
         document.getElementById('chatSection').style.display = 'block';
       } else {
         document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('signUpSection').style.display = 'none';
         document.getElementById('chatSection').style.display = 'none';
       }
     };
 
-    // Save user to DB
+    // Save user to the database
     const saveUserToDB = (user) => {
       firebase.database().ref('users/' + user.uid).set({
-        username: user.displayName,
-        email: user.email,
-        profilePicture: user.photoURL || "default_pic_url",
+        username: user.email.split('@')[0],
+        profilePic: user.photoURL || 'https://www.example.com/default-avatar.png',
         status: 'online',
-        theme: 'dark', // Example of a customizable feature
       });
     };
 
-    // Feature 2: Send Message
+    // Display user profile
+    const displayUserProfile = (user) => {
+      document.getElementById('profilePic').src = user.photoURL || 'https://www.example.com/default-avatar.png';
+      document.getElementById('username').innerText = user.email.split('@')[0];
+      document.getElementById('status').innerText = `Status: Online`;
+      document.getElementById('onlineStatus').innerText = 'Online';
+    };
+
+    // Send message
     const sendMessage = (message) => {
       if (message.trim() === "") return;
       const messageRef = db.ref('servers/' + currentServer + '/messages').push();
@@ -102,40 +225,50 @@
       });
     };
 
-    // Feature 3: Display Messages
+    // Display messages
     const displayMessage = (messageData) => {
       const messageElement = document.createElement('div');
       messageElement.classList.add('message');
       messageElement.innerHTML = `
         <div class="message-content">${messageData.message}</div>
         <div class="meta">Sent by ${messageData.userId} at ${new Date(messageData.timestamp).toLocaleString()}</div>
-        <div class="actions">
-          <span class="emoji-btn">❤️</span> <span class="emoji-btn">🔧</span> <span class="emoji-btn">❌</span>
-        </div>
       `;
       document.getElementById('chatBox').appendChild(messageElement);
     };
 
-    // Feature 4: Dark Mode Toggle
+    // Get and display servers
+    const loadServers = () => {
+      db.ref('servers').once('value', snapshot => {
+        const servers = snapshot.val();
+        const serverList = document.getElementById('serverList');
+        serverList.innerHTML = '';
+        for (const server in servers) {
+          const serverDiv = document.createElement('div');
+          serverDiv.innerText = server;
+          serverDiv.addEventListener('click', () => {
+            currentServer = server;
+            loadMessages();
+          });
+          serverList.appendChild(serverDiv);
+        }
+      });
+    };
+
+    // Load messages from the current server
+    const loadMessages = () => {
+      db.ref('servers/' + currentServer + '/messages').on('child_added', snapshot => {
+        const message = snapshot.val();
+        displayMessage(message);
+      });
+    };
+
+    // Toggle dark mode
     const toggleDarkMode = () => {
       document.body.classList.toggle('dark-mode');
       document.body.classList.toggle('light-mode');
     };
 
-    // Feature 5: Google Login
-    const googleLogin = async () => {
-      try {
-        const result = await firebase.auth().signInWithPopup(provider);
-        currentUser = result.user;
-        saveUserToDB(currentUser);
-        toggleSections(true);
-      } catch (error) {
-        console.error('Google login error:', error);
-        alert('Google login failed. Try again!');
-      }
-    };
-
-    // Feature 6: Email/Password Login
+    // Email login
     const emailLogin = async () => {
       const email = document.getElementById('emailInput').value;
       const password = document.getElementById('passwordInput').value;
@@ -144,77 +277,58 @@
         currentUser = result.user;
         saveUserToDB(currentUser);
         toggleSections(true);
+        displayUserProfile(currentUser);
+        loadServers();
       } catch (error) {
-        console.error('Email login error:', error);
-        alert('Login failed. Please check your email and password.');
+        console.error('Login error:', error);
       }
     };
 
-    // Feature 7: Email/Password Sign Up
+    // Email signup
     const emailSignUp = async () => {
-      const email = document.getElementById('emailInput').value;
-      const password = document.getElementById('passwordInput').value;
+      const email = document.getElementById('signupEmailInput').value;
+      const password = document.getElementById('signupPasswordInput').value;
       try {
         const result = await firebase.auth().createUserWithEmailAndPassword(email, password);
         currentUser = result.user;
         saveUserToDB(currentUser);
         toggleSections(true);
+        displayUserProfile(currentUser);
+        loadServers();
       } catch (error) {
         console.error('Sign up error:', error);
-        alert('Sign up failed. Try again!');
       }
     };
 
-    // Feature 8: Logout
-    const logOut = async () => {
-      try {
-        await firebase.auth().signOut();
+    // Sign out
+    const signOut = () => {
+      firebase.auth().signOut().then(() => {
         currentUser = null;
         toggleSections(false);
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('Logout failed!');
-      }
-    };
-
-    // Feature 9: Admin Actions (Placeholder)
-    const adminActions = () => {
-      alert("Admin actions available (e.g., banning, muting users, etc.)");
-    };
-
-    // Listen for new messages in real-time
-    const listenForMessages = () => {
-      db.ref('servers/' + currentServer + '/messages').on('child_added', snapshot => {
-        const message = snapshot.val();
-        displayMessage(message);
+      }).catch((error) => {
+        console.error('Sign out error:', error);
       });
     };
 
     // Event Listeners
-    document.getElementById('googleLoginBtn').addEventListener('click', googleLogin);
-    document.getElementById('emailLoginBtn').addEventListener('click', emailLogin);
+    document.getElementById('loginBtn').addEventListener('click', emailLogin);
     document.getElementById('signUpBtn').addEventListener('click', emailSignUp);
-    document.getElementById('logoutBtn').addEventListener('click', logOut);
+    document.getElementById('signUpLink').addEventListener('click', () => {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('signUpSection').style.display = 'block';
+    });
+    document.getElementById('loginLink').addEventListener('click', () => {
+      document.getElementById('signUpSection').style.display = 'none';
+      document.getElementById('loginSection').style.display = 'block';
+    });
+    document.getElementById('logoutBtn').addEventListener('click', signOut);
+    document.getElementById('sendMessageBtn').addEventListener('click', () => {
+      const message = document.getElementById('messageInput').value;
+      sendMessage(message);
+    });
     document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
-    document.getElementById('messageInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        sendMessage(e.target.value);
-        e.target.value = '';
-      }
-    });
-    document.getElementById('adminBtn').addEventListener('click', adminActions);
-
-    // Check auth state and toggle UI
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        toggleSections(true);
-        listenForMessages();
-      } else {
-        toggleSections(false);
-      }
-    });
   </script>
 </body>
 </html>
+
 
