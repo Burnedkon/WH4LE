@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wh4le - Ultimate Hacker Social</title>
 
-  <!-- Firebase SDK for Web -->
+  <!-- Firebase SDK for Web (via traditional script tags) -->
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
@@ -120,7 +120,7 @@
   <script>
     // Firebase Configuration (replace with your details)
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",  // Replace with your Firebase API key
+      apiKey: "AIzaSyA4DsapP20gwUihxoSbVuX9oThNCRV2HVA",  // Replace with your Firebase API key
       authDomain: "wh4le-d7e9d.firebaseapp.com",
       databaseURL: "https://wh4le-d7e9d.firebaseio.com/",
       projectId: "wh4le-d7e9d",
@@ -131,7 +131,7 @@
     };
 
     // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
 
@@ -239,4 +239,5 @@
   </script>
 </body>
 </html>
+
 
