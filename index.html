@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wh4le - Hacker Social</title>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js"></script>
+  
+  <style>
+    /* Dark Mode Styles and UI Layout */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+      color: #fff;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #chatBox {
+      width: 90%;
+      max-width: 800px;
+      padding: 10px;
+      background-color: #333;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow-y: scroll;
+      height: 300px;
+    }
+    .message {
+      margin: 5px;
+      padding: 8px;
+      background-color: #444;
+      border-radius: 6px;
+    }
+    .message .meta {
+      font-size: 12px;
+      color: #aaa;
+    }
+    .message .actions {
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+      color: #6200ea;
+    }
+    .login-btn, #darkModeBtn {
+      padding: 10px 20px;
+      background-color: #6200ea;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      margin: 10px;
+    }
+    .login-btn:hover, #darkModeBtn:hover {
+      background-color: #3700b3;
+    }
+    .dark-mode {
+      background-color: #121212 !important;
+      color: #fff !important;
+    }
+    .light-mode {
+      background-color: #fff !important;
+      color: #000 !important;
+    }
+    #messageInput {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    .emoji-btn {
+      font-size: 18px;
+      cursor: pointer;
+    }
+    /* Additional CSS for customization */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Wh4le - Hacker Social</h1>
+    <button class="login-btn" id="loginBtn">Login with Google</button>
+    <div id="chatBox"></div>
+    <input type="text" id="messageInput" placeholder="Type a message..." style="display: none;" />
+    <button id="darkModeBtn">Toggle Dark Mode</button>
+    <button class="emoji-btn">😀</button>
+  </div>
+
+  <script>
+    // Firebase Initialization
+    const firebaseConfig = {
+      apiKey: "AIzaSyA4D...", // Use your Firebase API key here
+      authDomain: "wh4le-d7e9d.firebaseapp.com",
+      databaseURL: "https://wh4le-d7e9d-default-rtdb.firebaseio.com/",
+      projectId: "wh4le-d7e9d",
+      storageBucket: "wh4le-d7e9d.appspot.com",
+      messagingSenderId: "465981402247",
+      appId: "1:465981402247:web:b55fd08796faa8aba95c22",
+      measurementId: "G-4Y49CC6ERN"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const storage = firebase.storage();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    
+    let currentUser = null;
+    
+    // Login function
+    const login = async () => {
+      try {
+        const result = await firebase.auth().signInWithPopup(provider);
+        currentUser = result.user;
+        document.getElementById('messageInput').style.display = 'block';
+        document.getElementById('loginBtn').style.display = 'none';
+        console.log('Logged in:', currentUser.displayName);
+        saveUserToDB(currentUser);
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Failed to login. Try again!');
+      }
+    };
+
+    // Save user data to Firebase
+    const saveUserToDB = (user) => {
+      firebase.database().ref('users/' + user.uid).set({
+        username: user.displayName,
+        email: user.email,
+        profilePicture: user.photoURL,
+        status: 'online',
+      });
+    };
+
+    // Send message to Firebase
+    const sendMessage = (message) => {
+      if (message.trim() === "") return;
+      const messageRef = db.ref('messages').push();
+      messageRef.set({
+        userId: currentUser.uid,
+        message: message,
+        timestamp: Date.now(),
+      });
+    };
+
+    // Display message with actions (edit, delete, reactions)
+    const displayMessage = (messageData) => {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      
+      const messageMeta = document.createElement('div');
+      messageMeta.classList.add('meta');
+      messageMeta.textContent = `Sent by ${messageData.userId} at ${new Date(messageData.timestamp).toLocaleString()}`;
+      
+      const messageActions = document.createElement('div');
+      messageActions.classList.add('actions');
+      messageActions.innerHTML = `<span class="emoji-btn" onclick="addReaction('${messageData.message}')">❤️</span> <span class="emoji-btn">🔧</span> <span class="emoji-btn">❌</span>`;
+      
+      messageElement.innerHTML = `
+        <div class="message-content">${messageData.message}</div>
+      `;
+      messageElement.appendChild(messageMeta);
+      messageElement.appendChild(messageActions);
+      document.getElementById('chatBox').appendChild(messageElement);
+    };
+
+    // Toggle Dark Mode
+    const toggleDarkMode = () => {
+      document.body.classList.toggle('dark-mode');
+      document.body.classList.toggle('light-mode');
+    };
+
+    // Send emoji reactions
+    const addReaction = (message) => {
+      alert(`Reacted to: ${message}`);
+    };
+
+    // Listen for new messages
+    const listenForMessages = () => {
+      db.ref('messages').on('child_added', snapshot => {
+        const message = snapshot.val();
+        displayMessage(message);
+      });
+    };
+
+    // Event Listeners
+    document.getElementById('loginBtn').addEventListener('click', login);
+    document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
+    document.getElementById('messageInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage(e.target.value);
+        e.target.value = '';
+      }
+    });
+
+    // Handle user login state change
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        listenForMessages();
+      }
+    });
+  </script>
+</body>
+</html>
