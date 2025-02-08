@@ -131,6 +131,22 @@
     #serverList div:hover {
       background-color: #6200ea;
     }
+    #friendsList {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #444;
+      border-radius: 5px;
+    }
+    #friendsList div {
+      cursor: pointer;
+      padding: 8px;
+      margin: 5px 0;
+      background-color: #555;
+      border-radius: 4px;
+    }
+    #friendsList div:hover {
+      background-color: #6200ea;
+    }
   </style>
 </head>
 <body>
@@ -158,6 +174,7 @@
       <p id="status">Status: <span id="onlineStatus">Offline</span></p>
     </div>
     <div id="serverList"></div>
+    <div id="friendsList"></div>
     <div id="chatBox"></div>
     <input type="text" id="messageInput" placeholder="Type a message..." />
     <button id="sendMessageBtn">Send Message</button>
@@ -206,6 +223,16 @@
       });
     };
 
+    // Create a new server
+    const createServer = (serverName) => {
+      const serverRef = db.ref('servers/' + serverName);
+      serverRef.set({
+        createdAt: Date.now(),
+        messages: [],
+      });
+      loadServers();
+    };
+
     // Display user profile
     const displayUserProfile = (user) => {
       document.getElementById('profilePic').src = user.photoURL || 'https://www.example.com/default-avatar.png';
@@ -214,121 +241,100 @@
       document.getElementById('onlineStatus').innerText = 'Online';
     };
 
-    // Send message
+    // Send message to current server
     const sendMessage = (message) => {
       if (message.trim() === "") return;
       const messageRef = db.ref('servers/' + currentServer + '/messages').push();
       messageRef.set({
         userId: currentUser.uid,
-        message: message,
+        message,
         timestamp: Date.now(),
       });
     };
 
-    // Display messages
-    const displayMessage = (messageData) => {
-      const messageElement = document.createElement('div');
-      messageElement.classList.add('message');
-      messageElement.innerHTML = `
-        <div class="message-content">${messageData.message}</div>
-        <div class="meta">Sent by ${messageData.userId} at ${new Date(messageData.timestamp).toLocaleString()}</div>
-      `;
-      document.getElementById('chatBox').appendChild(messageElement);
-    };
-
-    // Get and display servers
-    const loadServers = () => {
-      db.ref('servers').once('value', snapshot => {
-        const servers = snapshot.val();
-        const serverList = document.getElementById('serverList');
-        serverList.innerHTML = '';
-        for (const server in servers) {
-          const serverDiv = document.createElement('div');
-          serverDiv.innerText = server;
-          serverDiv.addEventListener('click', () => {
-            currentServer = server;
-            loadMessages();
-          });
-          serverList.appendChild(serverDiv);
-        }
-      });
-    };
-
-    // Load messages from the current server
-    const loadMessages = () => {
-      db.ref('servers/' + currentServer + '/messages').on('child_added', snapshot => {
+    // Listen for messages in the current server
+    const listenForMessages = () => {
+      db.ref('servers/' + currentServer + '/messages').on('child_added', (snapshot) => {
         const message = snapshot.val();
-        displayMessage(message);
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
+        messageElement.innerHTML = `<b>${message.userId}</b>: ${message.message}`;
+        document.getElementById('chatBox').appendChild(messageElement);
       });
     };
 
-    // Toggle dark mode
-    const toggleDarkMode = () => {
-      document.body.classList.toggle('dark-mode');
-      document.body.classList.toggle('light-mode');
+    // Log in the user
+    const logIn = (email, password) => {
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          currentUser = userCredential.user;
+          saveUserToDB(currentUser);
+          toggleSections(true);
+          displayUserProfile(currentUser);
+          listenForMessages();
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     };
 
-    // Email login
-    const emailLogin = async () => {
-      const email = document.getElementById('emailInput').value;
-      const password = document.getElementById('passwordInput').value;
-      try {
-        const result = await firebase.auth().signInWithEmailAndPassword(email, password);
-        currentUser = result.user;
-        saveUserToDB(currentUser);
-        toggleSections(true);
-        displayUserProfile(currentUser);
-        loadServers();
-      } catch (error) {
-        console.error('Login error:', error);
-      }
+    // Sign up the user
+    const signUp = (email, password) => {
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          currentUser = userCredential.user;
+          saveUserToDB(currentUser);
+          toggleSections(true);
+          displayUserProfile(currentUser);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     };
 
-    // Email signup
-    const emailSignUp = async () => {
-      const email = document.getElementById('signupEmailInput').value;
-      const password = document.getElementById('signupPasswordInput').value;
-      try {
-        const result = await firebase.auth().createUserWithEmailAndPassword(email, password);
-        currentUser = result.user;
-        saveUserToDB(currentUser);
-        toggleSections(true);
-        displayUserProfile(currentUser);
-        loadServers();
-      } catch (error) {
-        console.error('Sign up error:', error);
-      }
-    };
-
-    // Sign out
-    const signOut = () => {
-      firebase.auth().signOut().then(() => {
+    // Logout
+    const logOut = () => {
+      auth.signOut().then(() => {
         currentUser = null;
         toggleSections(false);
       }).catch((error) => {
-        console.error('Sign out error:', error);
+        console.error(error);
       });
     };
 
     // Event Listeners
-    document.getElementById('loginBtn').addEventListener('click', emailLogin);
-    document.getElementById('signUpBtn').addEventListener('click', emailSignUp);
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
+      logIn(email, password);
+    });
+
+    document.getElementById('signUpBtn').addEventListener('click', () => {
+      const email = document.getElementById('signupEmailInput').value;
+      const password = document.getElementById('signupPasswordInput').value;
+      signUp(email, password);
+    });
+
     document.getElementById('signUpLink').addEventListener('click', () => {
       document.getElementById('loginSection').style.display = 'none';
       document.getElementById('signUpSection').style.display = 'block';
     });
+
     document.getElementById('loginLink').addEventListener('click', () => {
       document.getElementById('signUpSection').style.display = 'none';
       document.getElementById('loginSection').style.display = 'block';
     });
-    document.getElementById('logoutBtn').addEventListener('click', signOut);
+
+    document.getElementById('logoutBtn').addEventListener('click', logOut);
+
     document.getElementById('sendMessageBtn').addEventListener('click', () => {
       const message = document.getElementById('messageInput').value;
       sendMessage(message);
     });
-    document.getElementById('darkModeBtn').addEventListener('click', toggleDarkMode);
+
+    document.getElementById('darkModeBtn').addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+    });
   </script>
 </body>
 </html>
-
-
