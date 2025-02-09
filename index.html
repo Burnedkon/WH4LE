@@ -4,156 +4,124 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wh4le - Ultimate Hacker Social</title>
-  
-  <!-- Firebase SDK -->
+
+  <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-analytics.js"></script>
-
+  
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
       background-color: #121212;
-      color: #fff;
-      text-align: center;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .container {
       max-width: 600px;
-      margin: auto;
-      padding: 20px;
-      background: #222;
-      border-radius: 10px;
+      margin-top: 50px;
+      text-align: center;
     }
     input, button {
-      width: 80%;
-      padding: 10px;
-      margin: 10px 0;
+      width: 100%;
+      margin-top: 10px;
     }
-    .chat-container {
-      max-height: 400px;
-      overflow-y: scroll;
-      background: #333;
-      padding: 10px;
-      border-radius: 8px;
-    }
-    .friend-list, .server-list {
-      max-height: 200px;
+    .chat-window {
+      height: 300px;
       overflow-y: auto;
-      background: #444;
+      background: #222;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
+    }
+    .message {
+      background: #333;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 8px;
     }
   </style>
 </head>
 <body>
-
   <div class="container" id="authSection">
-    <h2>Welcome to Wh4le</h2>
+    <h1>Wh4le - The Future of Social</h1>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
     <button onclick="signUp()">Sign Up</button>
-    <button onclick="login()">Login</button>
+    <button onclick="logIn()">Log In</button>
   </div>
-
-  <div class="container" id="chatSection" style="display: none;">
-    <h2>Servers</h2>
-    <button onclick="createServer()">Create Server</button>
-    <div id="serverList" class="server-list"></div>
-    <h2>Friends</h2>
-    <input type="text" id="searchUser" placeholder="Search users...">
-    <button onclick="searchUsers()">Search</button>
-    <div id="friendList" class="friend-list"></div>
-    <h2>Chat</h2>
-    <div id="chatContainer" class="chat-container"></div>
-    <input type="text" id="message" placeholder="Type a message">
+  
+  <div class="container" id="chatSection" style="display:none;">
+    <h1>Welcome to Wh4le</h1>
+    <button onclick="logOut()">Log Out</button>
+    <div id="chatWindow" class="chat-window"></div>
+    <input type="text" id="message" placeholder="Enter message">
     <button onclick="sendMessage()">Send</button>
-    <button onclick="logout()">Logout</button>
   </div>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyA4DsapP20gwUihxoSbVuX9oThNCRV2HVA", // Use your API key
+      apiKey: "AIzaSyA4DsapP20gwUihxoSbVuX9oThNCRV2HVA",
       authDomain: "wh4le-d7e9d.firebaseapp.com",
       databaseURL: "https://wh4le-d7e9d.firebaseio.com/",
       projectId: "wh4le-d7e9d",
       storageBucket: "wh4le-d7e9d.appspot.com",
       messagingSenderId: "465981402247",
-      appId: "1:465981402247:web:b55fd08796faa8aba95c22"
+      appId: "1:465981402247:web:b55fd08796faa8aba95c22",
+      measurementId: "G-4Y49CC6ERN"
     };
+    
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-
+    
     function signUp() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
       auth.createUserWithEmailAndPassword(email, password)
-        .then(user => showChat())
-        .catch(err => alert(err.message));
+        .then(() => {
+          document.getElementById("authSection").style.display = "none";
+          document.getElementById("chatSection").style.display = "block";
+        })
+        .catch(error => alert(error.message));
     }
-
-    function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+    
+    function logIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
       auth.signInWithEmailAndPassword(email, password)
-        .then(user => showChat())
-        .catch(err => alert(err.message));
+        .then(() => {
+          document.getElementById("authSection").style.display = "none";
+          document.getElementById("chatSection").style.display = "block";
+        })
+        .catch(error => alert(error.message));
     }
-
-    function logout() {
+    
+    function logOut() {
       auth.signOut().then(() => {
-        document.getElementById('authSection').style.display = 'block';
-        document.getElementById('chatSection').style.display = 'none';
+        document.getElementById("authSection").style.display = "block";
+        document.getElementById("chatSection").style.display = "none";
       });
     }
-
-    function showChat() {
-      document.getElementById('authSection').style.display = 'none';
-      document.getElementById('chatSection').style.display = 'block';
-    }
-
+    
     function sendMessage() {
-      const message = document.getElementById('message').value;
-      db.ref('messages').push({
+      const message = document.getElementById("message").value;
+      db.ref("messages").push().set({
         user: auth.currentUser.email,
-        message: message
+        text: message
       });
     }
-
-    db.ref('messages').on('child_added', snapshot => {
+    
+    db.ref("messages").on("child_added", snapshot => {
       const msg = snapshot.val();
-      const msgDiv = document.createElement('div');
-      msgDiv.textContent = `${msg.user}: ${msg.message}`;
-      document.getElementById('chatContainer').appendChild(msgDiv);
+      const chatWindow = document.getElementById("chatWindow");
+      const msgElement = document.createElement("div");
+      msgElement.classList.add("message");
+      msgElement.innerText = `${msg.user}: ${msg.text}`;
+      chatWindow.appendChild(msgElement);
     });
-
-    function createServer() {
-      const serverName = prompt('Enter server name:');
-      if (serverName) {
-        db.ref('servers').push({ name: serverName });
-      }
-    }
-
-    db.ref('servers').on('child_added', snapshot => {
-      const server = snapshot.val();
-      const serverDiv = document.createElement('div');
-      serverDiv.textContent = server.name;
-      document.getElementById('serverList').appendChild(serverDiv);
-    });
-
-    function searchUsers() {
-      const searchQuery = document.getElementById('searchUser').value;
-      db.ref('users').orderByChild('email').startAt(searchQuery).endAt(searchQuery + "\uf8ff").once('value', snapshot => {
-        document.getElementById('friendList').innerHTML = '';
-        snapshot.forEach(childSnapshot => {
-          const user = childSnapshot.val();
-          const userDiv = document.createElement('div');
-          userDiv.textContent = user.email;
-          document.getElementById('friendList').appendChild(userDiv);
-        });
-      });
-    }
   </script>
 </body>
 </html>
